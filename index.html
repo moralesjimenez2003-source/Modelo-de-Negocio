@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RestaurantAnalytics Pro - Plataforma de Análisis Automático</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #f0f2f5 0%, #e8ecf1 100%);
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 25px 25px 25px 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header-left h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-left h1 i {
+            color: #ffd700;
+            text-shadow: 0 0 15px rgba(255,215,0,0.5);
+        }
+
+        .header-left p {
+            color: #cbd5e1;
+            font-size: 1.1rem;
+        }
+
+        .restaurant-selector {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            min-width: 300px;
+        }
+
+        .restaurant-selector select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #334155;
+            color: white;
+            font-size: 1rem;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        .restaurant-selector label {
+            font-weight: 500;
+            color: #ffd700;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .stat-info h3 {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+
+        .stat-change {
+            font-size: 0.9rem;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2563eb20, #1e40af20);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #2563eb;
+        }
+
+        /* Main Content Grid */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 1200px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h3 {
+            color: #0f172a;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .time-filters {
+            display: flex;
+            gap: 10px;
+        }
+
+        .time-btn {
+            padding: 8px 15px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+
+        .time-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .metrics-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .metrics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .metrics-header h3 {
+            color: #0f172a;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .kpi-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .kpi-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .kpi-label {
+            display: flex;
+            justify-content: space-between;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .kpi-progress {
+            height: 10px;
+            background: #f1f5f9;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.8s ease;
+        }
+
+        /* Second Row */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 1000px) {
+            .insights-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .insight-card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-left: 5px solid;
+            transition: all 0.3s;
+        }
+
+        .insight-card:hover {
+            transform: translateX(5px);
+        }
+
+        .insight-icon {
+            font-size: 1.5rem;
+            color: #2563eb;
+            margin-bottom: 15px;
+        }
+
+        .insight-title {
+            font-size: 1rem;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+
+        .insight-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        .insight-desc {
+            color: #64748b;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* AI Analysis Section */
+        .ai-analysis {
+            background: linear-gradient(145deg, #0f172a, #1e293b);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            color: white;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .ai-header i {
+            font-size: 2rem;
+            color: #ffd700;
+        }
+
+        .ai-header h3 {
+            font-size: 1.4rem;
+        }
+
+        .ai-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .ai-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .ai-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .ai-metric-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .ai-metric-label {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin-bottom: 5px;
+        }
+
+        .ai-metric-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffd700;
+        }
+
+        .recommendations {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 5px solid #ffd700;
+        }
+
+        .recommendations h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+
+        .recommendations ul {
+            list-style: none;
+        }
+
+        .recommendations li {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: #e2e8f0;
+        }
+
+        .recommendations li i {
+            color: #10b981;
+            margin-top: 3px;
+        }
+
+        /* Sentiment Analysis */
+        .sentiment-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .sentiment-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .sentiment-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .sentiment-score {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .sentiment-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .sentiment-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .tag {
+            background: #f1f5f9;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #1e293b;
+        }
+
+        /* Menu Analysis */
+        .menu-analysis {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+        }
+
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .menu-item {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border-left: 4px solid #2563eb;
+        }
+
+        .menu-item-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .menu-item-stats {
+            display: flex;
+            justify-content: space-between;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .menu-item-rating {
+            color: #ffd700;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            margin-top: 40px;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.success { background: #10b98120; color: #10b981; }
+        .badge.warning { background: #f59e0b20; color: #f59e0b; }
+        .badge.danger { background: #ef444420; color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="header-left">
+                <h1>
+                    <i class="fas fa-utensils"></i>
+                    RestaurantAnalytics Pro
+                </h1>
+                <p><i class="fas fa-robot"></i> Análisis automático con IA | Datos en tiempo real | Predicciones inteligentes</p>
+            </div>
+            <div class="restaurant-selector">
+                <label><i class="fas fa-store"></i> Seleccionar Restaurante</label>
+                <select id="restaurantSelect" onchange="changeRestaurant()">
+                    <option value="1">🍔 La Burguesía - Centro</option>
+                    <option value="2">🍕 Pizzería Donatello - Norte</option>
+                    <option value="3">🍣 Sushi Master - Sur</option>
+                    <option value="4">🥗 Green Bowl - Este</option>
+                    <option value="5" selected>🔥 La Parrilla de Juan - Oeste</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>INGRESOS HOY</h3>
+                    <div class="stat-number" id="revenueToday">$3,450</div>
+                    <div class="stat-change">
+                        <i class="fas fa-arrow-up"></i> +12.5% vs ayer
+                    </div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>CLIENTES HOY</h3>
+                    <div class="stat-number" id="customersToday">147</div>
+                    <div class="stat-change">
+                        <i class="fas fa-arrow-up"></i> +8.3% vs ayer
+                    </div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>TICKET PROMEDIO</h3>
+                    <div class="stat-number" id="avgTicket">$23.47</div>
+                    <div class="stat-change">
+                        <i class="fas fa-arrow-up"></i> +3.2% vs ayer
+                    </div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-receipt"></i>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>RATING GENERAL</h3>
+                    <div class="stat-number" id="rating">4.8 ⭐</div>
+                    <div class="stat-change">
+                        <i class="fas fa-star"></i> +0.2 este mes
+                    </div>
+                </div>
+                <div class="stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Analytics Row -->
+        <div class="analytics-grid">
+            <!-- Revenue Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3><i class="fas fa-chart-line" style="color: #2563eb;"></i> Análisis de Ingresos</h3>
+                    <div class="time-filters">
+                        <button class="time-btn active" onclick="setTimeFilter('week')">Semana</button>
+                        <button class="time-btn" onclick="setTimeFilter('month')">Mes</button>
+                        <button class="time-btn" onclick="setTimeFilter('year')">Año</button>
+                    </div>
+                </div>
+                <canvas id="revenueChart"></canvas>
+            </div>
+
+            <!-- KPIs Panel -->
+            <div class="metrics-panel">
+                <div class="metrics-header">
+                    <h3><i class="fas fa-tachometer-alt" style="color: #2563eb;"></i> KPIs en Tiempo Real</h3>
+                    <span class="badge success">Actualizado</span>
+                </div>
+                <div class="kpi-list" id="kpiList">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Insights Cards -->
+        <div class="insights-grid" id="insightsGrid">
+            <!-- Se llena dinámicamente -->
+        </div>
+
+        <!-- AI Analysis Section -->
+        <div class="ai-analysis">
+            <div class="ai-header">
+                <i class="fas fa-brain"></i>
+                <h3>Análisis Inteligente IA · Predicciones y Recomendaciones</h3>
+                <span class="badge warning" style="margin-left: auto;">Análisis automático cada 5 min</span>
+            </div>
+            <div class="ai-content">
+                <div class="ai-metrics" id="aiMetrics">
+                    <!-- Se llena dinámicamente -->
+                </div>
+                <div class="recommendations" id="recommendations">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Sentiment Analysis -->
+        <div class="menu-analysis">
+            <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px;">
+                <i class="fas fa-smile" style="color: #2563eb;"></i>
+                Análisis de Sentimiento en Redes Sociales y Reseñas
+            </h3>
+            <div class="sentiment-grid" id="sentimentGrid">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Menu Performance Analysis -->
+        <div class="menu-analysis">
+            <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px;">
+                <i class="fas fa-utensil-spoon" style="color: #2563eb;"></i>
+                Análisis de Rendimiento del Menú
+            </h3>
+            <div class="menu-grid" id="menuGrid">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 RestaurantAnalytics Pro - Plataforma de análisis automático con IA</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <i class="fas fa-robot"></i> Análisis en tiempo real | Predicción de demanda | Optimización de menú | Gestión de reseñas
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Variables globales
+        let revenueChart;
+        let currentRestaurant = '5';
+        let currentTimeFilter = 'week';
+
+        // Datos simulados para diferentes restaurantes
+        const restaurantData = {
+            '1': { // La Burguesía
+                name: 'La Burguesía - Centro',
+                revenue: [2850, 3100, 2980, 3400, 3650, 3900, 4100],
+                customers: [98, 105, 112, 128, 135, 142, 156],
+                avgTicket: 23.4,
+                rating: 4.6,
+                kpis: {
+                    ocupacion: 78,
+                    rotacion: 3.2,
+                    satisfaccion: 86,
+                    eficiencia: 72
+                }
+            },
+            '5': { // La Parrilla de Juan (seleccionado por defecto)
+                name: 'La Parrilla de Juan - Oeste',
+                revenue: [3200, 3450, 3300, 3800, 4000, 4300, 4500],
+                customers: [112, 120, 118, 135, 147, 158, 172],
+                avgTicket: 26.8,
+                rating: 4.8,
+                kpis: {
+                    ocupacion: 85,
+                    rotacion: 2.8,
+                    satisfaccion: 92,
+                    eficiencia: 78
+                }
+            }
+        };
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            initDashboard();
+            startAutoRefresh();
+        });
+
+        function initDashboard() {
+            createRevenueChart();
+            updateKPIList();
+            updateInsights();
+            updateAIAnalysis();
+            updateSentimentAnalysis();
+            updateMenuAnalysis();
+            addEventListeners();
+        }
+
+        function createRevenueChart() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            
+            if (revenueChart) {
+                revenueChart.destroy();
+            }
+
+            const data = getRevenueData();
+
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+                    datasets: [{
+                        label: 'Ingresos ($)',
+                        data: data,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#2563eb',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `$${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getRevenueData() {
+            const data = restaurantData[currentRestaurant] || restaurantData['5'];
+            return data.revenue;
+        }
+
+        function updateKPIList() {
+            const kpiList = document.getElementById('kpiList');
+            const data = restaurantData[currentRestaurant] || restaurantData['5'];
+            
+            const kpis = [
+                { label: 'Ocupación promedio', value: `${data.kpis.ocupacion}%`, color: '#2563eb', target: 90 },
+                { label: 'Rotación de mesas', value: `${data.kpis.rotacion}/hora`, color: '#10b981', target: 3.5 },
+                { label: 'Satisfacción cliente', value: `${data.kpis.satisfaccion}%`, color: '#f59e0b', target: 95 },
+                { label: 'Eficiencia operativa', value: `${data.kpis.eficiencia}%`, color: '#8b5cf6', target: 85 }
+            ];
+
+            kpiList.innerHTML = kpis.map(kpi => `
+                <div class="kpi-item">
+                    <div class="kpi-label">
+                        <span>${kpi.label}</span>
+                        <span style="font-weight: 600; color: #0f172a;">${kpi.value}</span>
+                    </div>
+                    <div class="kpi-progress">
+                        <div class="progress-fill" 
+                             style="width: ${parseInt(kpi.value)}%; background-color: ${kpi.color};">
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateInsights() {
+            const insightsGrid = document.getElementById('insightsGrid');
+            
+            const insights = [
+                {
+                    icon: 'fa-chart-line',
+                    title: 'Pronóstico de Ventas',
+                    value: '$4,850',
+                    desc: '+15.2% vs semana pasada',
+                    color: '#2563eb'
+                },
+                {
+                    icon: 'fa-clock',
+                    title: 'Hora Pico',
+                    value: '8:30 PM',
+                    desc: '47 clientes en espera',
+                    color: '#10b981'
+                },
+                {
+                    icon: 'fa-fire',
+                    title: 'Producto Estrella',
+                    value: 'Parrillada',
+                    desc: '42 órdenes hoy',
+                    color: '#f59e0b'
+                },
+                {
+                    icon: 'fa-users',
+                    title: 'Retención',
+                    value: '68%',
+                    desc: 'Clientes recurrentes',
+                    color: '#8b5cf6'
+                },
+                {
+                    icon: 'fa-truck',
+                    title: 'Delivery',
+                    value: '32%',
+                    desc: 'del total de ventas',
+                    color: '#ec4899'
+                },
+                {
+                    icon: 'fa-star',
+                    title: 'Reviews',
+                    value: '4.8 ★',
+                    desc: '+24 reseñas hoy',
+                    color: '#f97316'
+                }
+            ];
+
+            insightsGrid.innerHTML = insights.map(insight => `
+                <div class="insight-card" style="border-left-color: ${insight.color};">
+                    <div class="insight-icon" style="color: ${insight.color};">
+                        <i class="fas ${insight.icon}"></i>
+                    </div>
+                    <div class="insight-title">${insight.title}</div>
+                    <div class="insight-value">${insight.value}</div>
+                    <div class="insight-desc">
+                        <i class="fas fa-arrow-up" style="color: #10b981;"></i>
+                        ${insight.desc}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateAIAnalysis() {
+            const aiMetrics = document.getElementById('aiMetrics');
+            const recommendations = document.getElementById('recommendations');
+
+            // Predicciones IA
+            aiMetrics.innerHTML = `
+                <div class="ai-metric-item">
+                    <div class="ai-metric-label">Ventas mañana</div>
+                    <div class="ai-metric-value">$4,200</div>
+                    <div style="color: #10b981; font-size: 0.8rem;">+8% vs hoy</div>
+                </div>
+                <div class="ai-metric-item">
+                    <div class="ai-metric-label">Clientes esperados</div>
+                    <div class="ai-metric-value">165</div>
+                    <div style="color: #10b981; font-size: 0.8rem;">+12% vs hoy</div>
+                </div>
+                <div class="ai-metric-item">
+                    <div class="ai-metric-label">Ingrediente crítico</div>
+                    <div class="ai-metric-value">Carne</div>
+                    <div style="color: #f59e0b; font-size: 0.8rem;">Stock: 22%</div>
+                </div>
+                <div class="ai-metric-item">
+                    <div class="ai-metric-label">Mejor horario</div>
+                    <div class="ai-metric-value">20:00-21:30</div>
+                    <div style="color: #10b981; font-size: 0.8rem;">Max capacidad</div>
+                </div>
+            `;
+
+            // Recomendaciones automáticas
+            recommendations.innerHTML = `
+                <h4><i class="fas fa-lightbulb"></i> Recomendaciones IA</h4>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> Aumentar personal mañana (pronóstico +12%)</li>
+                    <li><i class="fas fa-check-circle"></i> Promoción especial: 2x1 en bebidas (baja rotación)</li>
+                    <li><i class="fas fa-check-circle"></i> Reordenar carne - stock crítico para fin de semana</li>
+                    <li><i class="fas fa-check-circle"></i> Optimizar turnos: pico 20:00-21:30 requiere +2 meseros</li>
+                </ul>
+            `;
+        }
+
+        function updateSentimentAnalysis() {
+            const sentimentGrid = document.getElementById('sentimentGrid');
+
+            const sentiments = [
+                { platform: 'Google', score: 4.7, positive: 78, neutral: 15, negative: 7 },
+                { platform: 'TripAdvisor', score: 4.5, positive: 72, neutral: 20, negative: 8 },
+                { platform: 'Instagram', score: 4.9, positive: 85, neutral: 12, negative: 3 },
+                { platform: 'UberEats', score: 4.6, positive: 75, neutral: 18, negative: 7 }
+            ];
+
+            sentimentGrid.innerHTML = sentiments.map(s => `
+                <div class="sentiment-card">
+                    <div class="sentiment-score" style="color: ${s.score >= 4.5 ? '#10b981' : s.score >= 4 ? '#f59e0b' : '#ef4444'}">
+                        ${s.score} ★
+                    </div>
+                    <div class="sentiment-label">${s.platform}</div>
+                    <div class="sentiment-tags">
+                        <span class="tag" style="background: #10b98120; color: #10b981;">${s.positive}% 👍</span>
+                        <span class="tag" style="background: #f59e0b20; color: #f59e0b;">${s.neutral}% 😐</span>
+                        <span class="tag" style="background: #ef444420; color: #ef4444;">${s.negative}% 👎</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateMenuAnalysis() {
+            const menuGrid = document.getElementById('menuGrid');
+
+            const menuItems = [
+                { name: 'Parrillada para 2', orders: 42, revenue: 1260, rating: 4.9, trend: '+15%' },
+                { name: 'Bife de chorizo', orders: 38, revenue: 950, rating: 4.8, trend: '+8%' },
+                { name: 'Provoleta', orders: 35, revenue: 525, rating: 4.7, trend: '+5%' },
+                { name: 'Vino Malbec', orders: 32, revenue: 480, rating: 4.6, trend: '+12%' },
+                { name: 'Ensalada mixta', orders: 28, revenue: 252, rating: 4.3, trend: '-2%' },
+                { name: 'Flan casero', orders: 25, revenue: 225, rating: 4.8, trend: '+20%' }
+            ];
+
+            menuGrid.innerHTML = menuItems.map(item => `
+                <div class="menu-item">
+                    <div class="menu-item-name">${item.name}</div>
+                    <div class="menu-item-stats">
+                        <span><i class="fas fa-shopping-cart"></i> ${item.orders} ord</span>
+                        <span>$${item.revenue}</span>
+                    </div>
+                    <div class="menu-item-stats" style="margin-top: 8px;">
+                        <span class="menu-item-rating">
+                            <i class="fas fa-star"></i> ${item.rating}
+                        </span>
+                        <span style="color: ${item.trend.includes('+') ? '#10b981' : '#ef4444'};">
+                            ${item.trend}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function changeRestaurant() {
+            const select = document.getElementById('restaurantSelect');
+            currentRestaurant = select.value;
+            
+            // Mostrar loading
+            document.getElementById('loading').classList.add('active');
+            
+            // Simular carga de datos
+            setTimeout(() => {
+                // Actualizar stats
+                const data = restaurantData[currentRestaurant] || restaurantData['5'];
+                document.getElementById('revenueToday').textContent = `$${data.revenue[data.revenue.length-1]}`;
+                document.getElementById('customersToday').textContent = data.customers[data.customers.length-1];
+                document.getElementById('avgTicket').textContent = `$${data.avgTicket}`;
+                document.getElementById('rating').textContent = `${data.rating} ⭐`;
+                
+                // Actualizar gráficos y datos
+                createRevenueChart();
+                updateKPIList();
+                updateInsights();
+                updateAIAnalysis();
+                
+                // Ocultar loading
+                document.getElementById('loading').classList.remove('active');
+            }, 800);
+        }
+
+        function setTimeFilter(filter) {
+            currentTimeFilter = filter;
+            
+            // Actualizar botones
+            document.querySelectorAll('.time
